@@ -2,6 +2,8 @@ import { existsSync, lstatSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { basename, join } from "path";
 import { cwd } from "process";
 
+// TODO: write_* methods file name calculation needs to be more robust
+// would not work for a file like '.gitignore'
 export class Filer {
     private target_path: string;
     private target_contents: Buffer;
