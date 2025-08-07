@@ -19,9 +19,9 @@ const main = () => {
 
         filer.write_encrypted(iv, tag, encrypted_data);
     } else if (cmd === COMMANDS.UNLOCK) {
-        const { decrypted_data } = crypter.decrypt(filer.get_target_contents(), pass);
+        const { decrypted_data, original_extension } = crypter.decrypt(filer.get_target_contents(), pass);
 
-       filer.write_decrypted(decrypted_data);
+       filer.write_decrypted(decrypted_data, original_extension);
     } else {
         throw new Error(`Unexpected command "${cmd}"`);
     }

@@ -1,11 +1,14 @@
 import { existsSync, lstatSync, readFileSync, rmSync, writeFileSync } from "fs";
-import { basename, join } from "path";
+import { join, parse } from "path";
 import { cwd } from "process";
 
-// TODO: write_* methods file name calculation needs to be more robust
-// would not work for a file like '.gitignore'
 export class Filer {
+    private EXTENSION_CHUNK_LENGTH = 16;
+
     private target_path: string;
+    private target_extension: string;
+    private target_name: string;
+    private target_dir: string;
     private target_contents: Buffer;
 
     constructor(target: string) {
@@ -16,9 +19,13 @@ export class Filer {
         }
 
         const target_contents = readFileSync(target_path);
+        const target_path_parsed = parse(target_path);
 
         this.target_contents = target_contents;
         this.target_path = target_path;
+        this.target_extension = target_path_parsed.ext;
+        this.target_name = target_path_parsed.name;
+        this.target_dir = target_path_parsed.dir;
     }
 
     public get_target_path(): string {
@@ -30,23 +37,21 @@ export class Filer {
     }
 
     public write_encrypted(iv: Buffer, tag: Buffer, encrypted_data: Buffer) {
-        const output_buffer = Buffer.alloc(iv.byteLength + tag.byteLength + encrypted_data.byteLength);
+        const output_buffer = Buffer.alloc(this.EXTENSION_CHUNK_LENGTH + iv.byteLength + tag.byteLength + encrypted_data.byteLength);
 
-        output_buffer.fill(tag, 0);
-        output_buffer.fill(iv, tag.byteLength);
-        output_buffer.fill(encrypted_data, tag.byteLength + iv.byteLength);
+        output_buffer.write(this.target_extension, 0);
+        tag.copy(output_buffer, this.EXTENSION_CHUNK_LENGTH);
+        iv.copy(output_buffer, this.EXTENSION_CHUNK_LENGTH + tag.byteLength);
+        encrypted_data.copy(output_buffer, this.EXTENSION_CHUNK_LENGTH + tag.byteLength + iv.byteLength);
 
-        const target_basename = basename(this.target_path).split('.');
-        const output_path = join(cwd(), `${target_basename.at(0)}.l.${target_basename.at(1)}`);
+        const output_path = join(this.target_dir, `${this.target_name}.encrypted`);
 
         writeFileSync(output_path, output_buffer);
         rmSync(this.target_path);
     }
 
-    public write_decrypted(decrypted_data: Buffer) {
-        const target_basename = basename(this.target_path).split('.l.');
-
-        writeFileSync(join(cwd(), `${target_basename.at(0)}.${target_basename.at(1)}`), decrypted_data);
+    public write_decrypted(decrypted_data: Buffer, original_extension: string) {
+        writeFileSync(join(this.target_dir, `${this.target_name}${original_extension}`), decrypted_data);
         rmSync(this.target_path);
     }
 }

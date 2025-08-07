@@ -5,7 +5,7 @@ import { join } from "path";
 import { cwd } from "process";
 import { readFileSync } from "fs";
 
-describe('Filter', () => {
+describe('Filer', () => {
     it('throws if target path does not exist', () => {
         assert.throws(() => {
             new Filer('bad-test-path');
@@ -30,11 +30,11 @@ describe('Filter', () => {
 
     it('reads target contents', () => {
         const filer = new Filer('package.json');
-        const actualContents = readFileSync(join(cwd(), 'package.json'));
+        const actual_contents = readFileSync(join(cwd(), 'package.json'));
 
         assert.equal(filer.get_target_contents().byteLength > 0, true);
 
-        const comparison = filer.get_target_contents().compare(actualContents);
+        const comparison = filer.get_target_contents().compare(actual_contents);
 
         assert.equal(comparison, 0);
     });
