@@ -21,6 +21,10 @@ export class Filer {
         const target_contents = readFileSync(target_path);
         const target_path_parsed = parse(target_path);
 
+        if (target_path_parsed.ext.length > this.EXTENSION_CHUNK_LENGTH) {
+            throw new Error(`Extension "${target_path_parsed.ext}" exceeds max length`);
+        }
+
         this.target_contents = target_contents;
         this.target_path = target_path;
         this.target_extension = target_path_parsed.ext;
