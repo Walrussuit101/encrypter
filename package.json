@@ -1,10 +1,11 @@
 {
   "name": "encrypt",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
     "start": "tsx src/index.ts",
-    "test": "tsx --test"
+    "test": "tsx --test",
+    "build": "tsx --test && esbuild src/index.ts --bundle --minify --platform=node --outfile=encrypter"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +13,7 @@
   "description": "",
   "devDependencies": {
     "@types/node": "^24.1.0",
+    "esbuild": "^0.25.8",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }

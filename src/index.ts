@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Crypter } from "./Crypter";
 import { Filer } from "./Filer";
 
