@@ -5,13 +5,15 @@ import { cwd } from "process";
 export class Filer {
     private EXTENSION_CHUNK_LENGTH = 16;
 
-    private target_path: string;
-    private target_extension: string;
-    private target_name: string;
-    private target_dir: string;
-    private target_contents: Buffer;
+    private target_path!: string;
+    private target_extension!: string;
+    private target_name!: string;
+    private target_dir!: string;
+    private target_contents!: Buffer;
 
-    constructor(target: string) {
+    constructor() { }
+
+    public init_target(target: string, cmd: string) {
         const target_path = join(cwd(), target);
 
         if (!existsSync(target_path) || !lstatSync(target_path).isFile()) {
@@ -25,19 +27,18 @@ export class Filer {
             throw new Error(`Extension "${target_path_parsed.ext}" exceeds max length`);
         }
 
+        if (
+            (target_path_parsed.ext === '.encrypted' && cmd === 'lock') ||
+            (target_path_parsed.ext !== '.encrypted' && cmd === 'unlock')
+        ) {
+            throw new Error('Trying to lock .encrypted or unlock non .encrypted file');
+        }
+
         this.target_contents = target_contents;
         this.target_path = target_path;
         this.target_extension = target_path_parsed.ext;
         this.target_name = target_path_parsed.name;
         this.target_dir = target_path_parsed.dir;
-    }
-
-    public get_target_path(): string {
-        return this.target_path;
-    }
-
-    public get_target_contents(): Buffer {
-        return this.target_contents;
     }
 
     public write_encrypted(iv: Buffer, tag: Buffer, encrypted_data: Buffer) {
@@ -57,5 +58,13 @@ export class Filer {
     public write_decrypted(decrypted_data: Buffer, original_extension: string) {
         writeFileSync(join(this.target_dir, `${this.target_name}${original_extension}`), decrypted_data);
         rmSync(this.target_path);
+    }
+
+    public get_target_path(): string {
+        return this.target_path;
+    }
+
+    public get_target_contents(): Buffer {
+        return this.target_contents;
     }
 }
